@@ -95,3 +95,92 @@ func toJSON(v interface{}) string {
 	}
 	return string(b)
 }
+
+// ListRecentTransactions scans the last `blocks` blocks (including latest) and returns a
+// slice of Transactions found in those blocks. This is a best-effort, potentially heavy
+// operation and should be used with care (small block ranges in production).
+func (c *GTKMClient) ListRecentTransactions(blocks int) ([]Transaction, error) {
+	if blocks <= 0 {
+		blocks = 50
+	}
+	latest, err := c.GetBlockNumber()
+	if err != nil {
+		return nil, err
+	}
+
+	var out []Transaction
+	for i := 0; i < blocks; i++ {
+		if latest < uint64(i) {
+			break
+		}
+		n := latest - uint64(i)
+		// Fetch block with full transactions
+		var blk map[string]interface{}
+		numHex := fmt.Sprintf("0x%x", n)
+		if err := c.client.Call(&blk, "eth_getBlockByNumber", numHex, true); err != nil {
+			// continue on error to try other blocks
+			continue
+		}
+		if blk == nil {
+			continue
+		}
+		// extract transactions
+		if txs, ok := blk["transactions"].([]interface{}); ok {
+			for _, raw := range txs {
+				if m, ok := raw.(map[string]interface{}); ok {
+					var t Transaction
+					if h, ok := m["hash"].(string); ok {
+						t.Hash = common.HexToHash(h)
+					}
+					if f, ok := m["from"].(string); ok {
+						t.From = common.HexToAddress(f)
+					}
+					if to, ok := m["to"].(string); ok && to != "" {
+						t.To = common.HexToAddress(to)
+					}
+					if v, ok := m["value"].(string); ok {
+						t.Value = new(big.Int)
+						if strings.HasPrefix(v, "0x") {
+							t.Value.SetString(v[2:], 16)
+						} else {
+							t.Value.SetString(v, 10)
+						}
+					}
+					if g, ok := m["gas"].(string); ok {
+						fmt.Sscanf(g, "0x%x", &t.Gas)
+					}
+					if gp, ok := m["gasPrice"].(string); ok {
+						t.GasPrice = new(big.Int)
+						if strings.HasPrefix(gp, "0x") {
+							t.GasPrice.SetString(gp[2:], 16)
+						} else {
+							t.GasPrice.SetString(gp, 10)
+						}
+					}
+					if nstr, ok := m["nonce"].(string); ok {
+						fmt.Sscanf(nstr, "0x%x", &t.Nonce)
+					}
+					if inp, ok := m["input"].(string); ok && inp != "0x" {
+						if b, err := hex.DecodeString(strings.TrimPrefix(inp, "0x")); err == nil {
+							t.Data = b
+						}
+					}
+					if bn, ok := m["blockNumber"].(string); ok && bn != "" {
+						fmt.Sscanf(bn, "0x%x", &t.BlockNum)
+					}
+					// Get receipt status if blockNumber present
+					if t.BlockNum > 0 {
+						if receipt, err := c.GetTransactionReceipt(t.Hash); err == nil && receipt != nil {
+							if status, ok := receipt["status"].(string); ok {
+								fmt.Sscanf(status, "0x%x", &t.Status)
+							}
+						}
+					}
+					out = append(out, t)
+				}
+			}
+		}
+	}
+
+	return out, nil
+}
