@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 // Below additions extend GTKMClient with utility RPC methods used by the UI.
@@ -98,7 +100,7 @@ func toJSON(v interface{}) string {
 
 // ListRecentTransactions scans the last `blocks` blocks (including latest) and returns a
 // slice of Transactions found in those blocks. This is a best-effort, potentially heavy
-// operation and should be used with care (small block ranges in production).
+// operation and should be used with care.
 func (c *GTKMClient) ListRecentTransactions(blocks int) ([]Transaction, error) {
 	if blocks <= 0 {
 		blocks = 50
