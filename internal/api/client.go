@@ -33,6 +33,8 @@ func DialAndVerify(ctx context.Context, rawURL string) (*Client, error) {
 		return nil, fmt.Errorf("rpc dial: %w", err)
 	}
 
+	ehtClient := ethclient.NewClient(rpcClient)
+
 	ethClient := ethclient.NewClient(rpcClient)
 
 	// verify by requesting chain id / network id
@@ -41,7 +43,7 @@ func DialAndVerify(ctx context.Context, rawURL string) (*Client, error) {
 	chainID, err := ethClient.ChainID(chainCtx)
 	if err != nil {
 		// close acquired clients on error
-		_ = rpcClient.Close()
+		rpcClient.Close()
 		return nil, fmt.Errorf("failed to verify chain id: %w", err)
 	}
 
@@ -87,9 +89,9 @@ func (c *Client) Close() {
 		return
 	}
 	if c.ETH != nil {
-		_ = c.ETH.Close()
+		c.ETH.Close()
 	}
 	if c.RPC != nil {
-		_ = c.RPC.Close()
+		c.RPC.Close()
 	}
 }
