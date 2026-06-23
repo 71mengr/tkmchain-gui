@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 	"math/big"
-
+        "sort"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
@@ -74,8 +74,49 @@ func (tv *TransactionView) CreateUI() fyne.CanvasObject {
 }
 
 func (tv *TransactionView) refreshList() {
-	// Placeholder: if you have a historical indexer or server-side API, populate tv.transactions here
-	tv.transList.Refresh()
+    if tv.rpc == nil {
+        // not connected, nothing to do
+        return
+    }
+
+    // Run heavy RPC work off the UI thread
+    go func() {
+        // Number of blocks to scan for recent txns; tune for your environment.
+        const blocksToScan = 200
+
+        txs, err := tv.rpc.ListRecentTransactions(blocksToScan)
+        if err != nil {
+            // Show error on UI (Fyne allows dialogs from goroutines)
+            dialog.ShowError(fmt.Errorf("failed to load recent transactions: %w", err), tv.window)
+            return
+        }
+
+        // Deduplicate by hash (ListRecentTransactions may return duplicates between blocks)
+        seen := make(map[string]api.Transaction, len(txs))
+        for _, t := range txs {
+            if t.Hash != (common.Hash{}) {
+                seen[t.Hash.Hex()] = t
+            }
+        }
+
+        // Convert map back to slice
+        out := make([]api.Transaction, 0, len(seen))
+        for _, t := range seen {
+            out = append(out, t)
+        }
+
+        // Sort by block number desc (most recent first), then by nonce desc
+        sort.Slice(out, func(i, j int) bool {
+            if out[i].BlockNum == out[j].BlockNum {
+                return out[i].Nonce > out[j].Nonce
+            }
+            return out[i].BlockNum > out[j].BlockNum
+        })
+
+        // Update the view's transaction list and refresh UI
+        tv.transactions = out
+        tv.transList.Refresh()
+    }()
 }
 
 // AddSentTransaction should be called when a tx is sent via the wallet to update the list.

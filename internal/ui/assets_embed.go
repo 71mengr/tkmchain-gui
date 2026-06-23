@@ -11,28 +11,28 @@ import (
 // as fyne.Resources and convenience helpers. Embedding makes the assets available
 // inside the compiled binary so the UI doesn't depend on external files at runtime.
 
-//go:embed ../../images/icon-16.png
+//go:embed assets/images/icon-16.png
 var icon16Bytes []byte
 
-//go:embed ../../images/icon-32.png
+//go:embed assets/images/icon-32.png
 var icon32Bytes []byte
 
-//go:embed ../../images/icon-48.png
+//go:embed assets/images/icon-48.png
 var icon48Bytes []byte
 
-//go:embed ../../images/icon-64.png
+//go:embed assets/images/icon-64.png
 var icon64Bytes []byte
 
-//go:embed ../../images/icon-128.png
+//go:embed assets/images/icon-128.png
 var icon128Bytes []byte
 
-//go:embed ../../images/icon-256.png
+//go:embed assets/images/icon-256.png
 var icon256Bytes []byte
 
-//go:embed ../../images/icon.png
+//go:embed assets/images/icon.png
 var iconPNGBytes []byte
 
-//go:embed ../../images/icon.ico
+//go:embed assets/images/icon.ico
 var iconIcoBytes []byte
 
 var (
