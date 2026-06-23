@@ -1,7 +1,7 @@
 package ui
 
 import (
-//	"fmt"
+	"fmt"
 	"math/big"
 
 	"fyne.io/fyne/v2"
@@ -147,7 +147,58 @@ func (wv *WalletView) sendTransaction() {
 		dialog.ShowInformation("Error", "Please fill in all fields", wv.window)
 		return
 	}
-	
-	// TODO: Implement send transaction
-	dialog.ShowInformation("Info", "Transaction sending will be implemented", wv.window)
+	if wv.addressEntry.Text == "" {
+		dialog.ShowInformation("Error", "Please enter sender address in the address field", wv.window)
+		return
+	}
+
+	// Disable the send button while processing
+	wv.sendBtn.Disable()
+	defer wv.sendBtn.Enable()
+
+	from := common.HexToAddress(wv.addressEntry.Text)
+	to := common.HexToAddress(wv.toEntry.Text)
+
+	// parse amount in ETH to wei
+	amountStr := wv.amountEntry.Text
+	amountFloat, ok := new(big.Float).SetString(amountStr)
+	if !ok {
+		dialog.ShowError(fmt.Errorf("invalid amount: %s", amountStr), wv.window)
+		return
+	}
+	weiFloat := new(big.Float).Mul(amountFloat, new(big.Float).SetFloat64(1e18))
+	value := new(big.Int)
+	weiFloat.Int(value) // truncates toward zero
+
+	go func() {
+		// get nonce
+		nonce, err := wv.rpc.GetTransactionCount(from)
+		if err != nil {
+			dialog.ShowError(fmt.Errorf("failed to get nonce: %w", err), wv.window)
+			return
+		}
+
+		// basic gas params
+		const gasLimit = uint64(21000)
+		// default gas price: 20 Gwei
+		gasPrice := big.NewInt(20000000000)
+
+		tx := api.Transaction{
+			From:     from,
+			To:       to,
+			Value:    value,
+			Gas:      gasLimit,
+			GasPrice: gasPrice,
+			Nonce:    nonce,
+			Data:     nil,
+		}
+
+		txHash, err := wv.rpc.SendTransaction(tx)
+		if err != nil {
+			dialog.ShowError(fmt.Errorf("failed to send transaction: %w", err), wv.window)
+			return
+		}
+
+		dialog.ShowInformation("Transaction Sent", "Transaction hash: "+txHash.Hex(), wv.window)
+	}()
 }
