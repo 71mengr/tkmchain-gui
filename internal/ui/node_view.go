@@ -48,8 +48,9 @@ func (nv *NodeView) CreateUI() fyne.CanvasObject {
 		widget.NewCard("Current Block", "", nv.blockLabel),
 	)
 
-	top := container.NewHBox(refreshBtn, startBtn, stopBtn)
-	content := container.NewBorder(top, nil, nil, nil, grid)
+	logo := ui.ImageFromResource(ui.Icon32, 32, 32)
+        top := container.NewHBox(logo, refreshBtn, startBtn, stopBtn)
+        content := container.NewBorder(top, nil, nil, nil, grid)
 	nv.startPeriodic(15 * time.Second)
 	return content
 }

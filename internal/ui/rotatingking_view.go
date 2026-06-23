@@ -34,7 +34,9 @@ func (rv *RotatingKingView) CreateUI() fyne.CanvasObject {
 	statusBtn := widget.NewButton("rk_status", func() { rv.doStatus() })
 
 	btns := container.NewHBox(addBtn, listBtn, statsBtn, statusBtn)
-	content := container.NewBorder(container.NewVBox(widget.NewLabel("RotatingKing Control")), nil, nil, nil, container.NewVBox(rv.addParams, btns, rv.output))
+	logo := ui.ImageFromResource(ui.Icon48, 48, 48)
+        title := container.NewHBox(logo, widget.NewLabelWithStyle("RotatingKing Control", fyne.TextAlignLeading, fyne.TextStyle{Bold:true}))
+        content := container.NewBorder(title, nil, nil, nil, container.NewVBox(rv.addParams, btns, rv.output))
 
 	return content
 }

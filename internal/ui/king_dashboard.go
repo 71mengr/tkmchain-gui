@@ -49,10 +49,8 @@ func NewKingDashboard(rpc *api.GTKMClient, window fyne.Window) *KingDashboard {
 
 func (kd *KingDashboard) CreateUI() fyne.CanvasObject {
 	// Header
-	header := canvas.NewText("�� Rotating King Dashboard", color.RGBA{255, 215, 0, 255})
-	header.TextSize = 24
-	header.TextStyle = fyne.TextStyle{Bold: true}
-	
+        logo := ui.ImageFromResource(ui.Icon128, 128, 128)
+        header := container.NewHBox(logo, widget.NewLabelWithStyle("Rotating King Dashboard", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}))
 	// Current King Card
 	currentKingCard := widget.NewCard("Current King", 
 		"The currently active rotating king",
@@ -61,7 +59,7 @@ func (kd *KingDashboard) CreateUI() fyne.CanvasObject {
 			kd.currentKingLabel,
 			widget.NewSeparator(),
 			widget.NewLabelWithStyle("Status:", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}),
-			widget.NewLabel("�� Active"),
+			widget.NewLabel("Active"),
 		),
 	)
 	
@@ -99,7 +97,7 @@ func (kd *KingDashboard) CreateUI() fyne.CanvasObject {
 		},
 		func() fyne.CanvasObject {
 			return container.NewHBox(
-				widget.NewLabel("��"),
+				widget.NewLabel("New"),
 				widget.NewLabel("Address: "),
 				widget.NewLabel(""),
 				widget.NewLabel("Balance: "),
@@ -219,7 +217,7 @@ func (kd *KingDashboard) fetchBalances() {
 			)
 			
 			if label, ok := kd.balanceLabels[address]; ok {
-				label.SetText(fmt.Sprintf("%.4f ETH", ethBalance))
+				label.SetText(fmt.Sprintf("%.4f TKM", ethBalance))
 			}
 		}(addr)
 	}

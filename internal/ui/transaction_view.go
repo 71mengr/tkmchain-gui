@@ -53,7 +53,7 @@ func (tv *TransactionView) CreateUI() fyne.CanvasObject {
 	// Manual lookup
 	hashEntry := widget.NewEntry()
 	hashEntry.SetPlaceHolder("Enter transaction hash (0x...)")
-	lookupBtn := widget.NewButton("Lookup", func() {
+	lookupBtn := widget.NewButtonWithIcon("Lookup", ui.Icon16, func() {
 		h := strings.TrimSpace(hashEntry.Text)
 		if h == "" {
 			return
@@ -63,7 +63,8 @@ func (tv *TransactionView) CreateUI() fyne.CanvasObject {
 
 	refreshBtn := widget.NewButton("Refresh", func() { tv.refreshList() })
 
-	left := container.NewVBox(refreshBtn, tv.transList)
+	logo := ui.ImageFromResource(ui.Icon32, 32, 32)
+        left := container.NewVBox(logo, refreshBtn, tv.transList)
 	right := container.NewVBox(widget.NewLabelWithStyle("Transaction Details", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}), tv.detailLabel, widget.NewSeparator(), container.NewHBox(hashEntry, lookupBtn))
 
 	content := container.NewHSplit(left, right)
@@ -123,7 +124,7 @@ func (tv *TransactionView) lookupByHash(h string) {
 	tv.detailLabel.SetText(b.String())
 }
 
-// helper to show ETH from wei
+// helper to show TKM from wei
 func weiToEthString(v *big.Int) string {
 	if v == nil {
 		return "0"

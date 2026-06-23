@@ -73,7 +73,10 @@ func (wv *WalletView) CreateUI() fyne.CanvasObject {
 	wv.toEntry = widget.NewEntry()
 	wv.toEntry.SetPlaceHolder("Recipient address")
 	wv.amountEntry = widget.NewEntry()
-	wv.amountEntry.SetPlaceHolder("Amount in ETH")
+	wv.amountEntry.SetPlaceHolder("Amount in TKM")
+        logo := ui.ImageFromResource(ui.Icon64, 64, 64)
+        header := container.NewHBox(logo, widget.NewLabelWithStyle("GTKM Wallet", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}))
+
 	wv.sendBtn = widget.NewButtonWithIcon("Send", theme.ConfirmIcon(), func() {
 		wv.sendTransaction()
 	})

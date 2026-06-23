@@ -17,6 +17,8 @@ import (
 func main() {
 	// Create application
 	myApp := app.NewWithID("com.gtkm.wallet")
+        myApp.SetIcon(ui.Icon64)
+
 	myWindow := myApp.NewWindow("GTKM Wallet - Rotating King Edition")
 
 	// Load configuration
